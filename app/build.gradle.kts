@@ -109,6 +109,13 @@ dependencies {
   // Logging
   implementation(libs.timber)
 
+  // Authentication
+  implementation(libs.supabase.kotlin)
+  implementation(libs.supabase.auth)
+  implementation(libs.google.auth.client)
+  implementation(libs.androidx.credentials)
+  implementation(libs.androidx.credentials.play.services)
+
   // Testing
   testImplementation(libs.junit)
   testImplementation(libs.mockk)

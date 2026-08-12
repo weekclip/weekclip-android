@@ -39,6 +39,11 @@ androidx-test-espresso = "3.6.1"
 mockk = "1.13.11"
 kotlinx-coroutines-test = "1.8.1"
 
+# Authentication
+supabase = "0.5.0"
+google-auth = "20.1.0"
+androidx-credentials = "1.2.2"
+
 # Utilities
 kotlinx-coroutines = "1.8.1"
 timber = "5.0.1"
@@ -91,6 +96,13 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 
 # Logging
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+# Authentication
+supabase-kotlin = { group = "io.github.jan-tennert.supabase", name = "supabase-kt", version.ref = "supabase" }
+supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt", version.ref = "supabase" }
+google-auth-client = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "google-auth" }
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "androidx-credentials" }
+androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "androidx-credentials" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

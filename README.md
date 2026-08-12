@@ -59,20 +59,38 @@ app/
 - Integration tests with Hilt
 - UI tests with Compose test framework
 
-## Key Features
+## Implementation Status
 
-### Current
-- [x] Modern Compose UI framework
-- [x] Dependency injection with Hilt
-- [x] Network layer with Retrofit
-- [x] MVVM architecture
+### Phase 1: Authentication + Media List ✅ In Progress
+- [x] Supabase OAuth setup
+- [x] SessionManager for auth state
+- [x] AuthViewModel with login/logout
+- [x] Studio API client (Retrofit)
+- [x] StudioListViewModel
+- [x] MediaListViewModel with pagination
+- [x] Data models (Studio, StudioMedia)
+- [ ] Login UI screen
+- [ ] Studio list UI screen
+- [ ] Media grid UI screen
+- [ ] Error handling UI
 
-### Planned
-- [ ] Video playback
-- [ ] Background upload with WorkManager
+### Phase 2: Video Playback
+- [ ] ExoPlayer integration
+- [ ] Custom video controls
+- [ ] Quality switching
+- [ ] Fullscreen + PiP mode
+
+### Phase 3: Upload System
+- [ ] Multipart upload
+- [ ] Photo bundle upload
+- [ ] WorkManager background upload
 - [ ] Scheduled WiFi upload
-- [ ] Media gallery integration
-- [ ] User authentication
+
+### Phase 4: Advanced Features
+- [ ] Comments
+- [ ] Share links
+- [ ] Member management
+- [ ] Account settings
 
 ## References
 - [Jetpack Compose Documentation](https://developer.android.com/jetpack/compose)
