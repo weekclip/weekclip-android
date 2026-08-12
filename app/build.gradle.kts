@@ -114,6 +114,15 @@ dependencies {
   // Image Loading
   implementation(libs.coil.compose)
 
+  // Media / Video Playback
+  implementation(libs.media3.exoplayer)
+  implementation(libs.media3.ui)
+  implementation(libs.media3.common)
+
+  // File Handling & Upload
+  implementation(libs.androidx.documentfile)
+  implementation(libs.okio)
+
   // Authentication
   implementation(libs.supabase.kotlin)
   implementation(libs.supabase.auth)

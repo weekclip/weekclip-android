@@ -15,6 +15,11 @@
   <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
   <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
+  <!-- Picture-in-Picture support -->
+  <uses-feature
+    android:name="android.software.picture_in_picture"
+    android:required="false" />
+
   <application
     android:name=".WeekclipApplication"
     android:allowBackup="false"
@@ -31,7 +36,9 @@
     <activity
       android:name=".MainActivity"
       android:exported="true"
-      android:theme="@style/Theme.Weekclip">
+      android:theme="@style/Theme.Weekclip"
+      android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+      android:supportsPictureInPicture="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />

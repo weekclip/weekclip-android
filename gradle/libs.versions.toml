@@ -52,6 +52,13 @@ androidx-credentials = "1.2.2"
 kotlinx-coroutines = "1.8.1"
 timber = "5.0.1"
 
+# Media
+media3-exoplayer = "1.3.0"
+
+# File handling
+androidx-documentfile = "1.0.1"
+okio = "4.12.0"
+
 [libraries]
 # Kotlin
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
@@ -102,6 +109,15 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 
 # Logging
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+# Media
+media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3-exoplayer" }
+media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3-exoplayer" }
+media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3-exoplayer" }
+
+# File handling
+androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "androidx-documentfile" }
+okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }
 
 # Authentication
 supabase-kotlin = { group = "io.github.jan-tennert.supabase", name = "supabase-kt", version.ref = "supabase" }

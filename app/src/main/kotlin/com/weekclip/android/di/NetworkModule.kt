@@ -4,6 +4,8 @@ import android.content.Context
 import com.weekclip.android.auth.getAccessToken
 import com.weekclip.android.studio.api.StudioApiClient
 import com.weekclip.android.studio.api.StudioApiService
+import com.weekclip.android.upload.api.UploadApiClient
+import com.weekclip.android.upload.api.UploadApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -99,5 +101,17 @@ object NetworkModule {
   @Singleton
   fun provideStudioApiClient(apiService: StudioApiService): StudioApiClient {
     return StudioApiClient(apiService)
+  }
+
+  @Provides
+  @Singleton
+  fun provideUploadApiService(retrofit: Retrofit): UploadApiService {
+    return retrofit.create(UploadApiService::class.java)
+  }
+
+  @Provides
+  @Singleton
+  fun provideUploadApiClient(apiService: UploadApiService): UploadApiClient {
+    return UploadApiClient(apiService)
   }
 }
