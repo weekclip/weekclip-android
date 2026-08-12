@@ -1,0 +1,52 @@
+# Gradle files
+.gradle/
+build/
+!build/
+*.jks
+*.keystore
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log/OS
+*.log
+.DS_Store
+
+# Android Studio/IntelliJ
+.idea/
+.idea_modules/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Android
+.classpath
+.project
+.settings/
+.externalNativeBuild
+bin/
+gen/
+
+# Kotlin
+.kotlin/
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ IDEA
+*.iml
+.idea/
+
+# Environment files
+.env
+.env.local
