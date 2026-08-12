@@ -69,6 +69,7 @@ dependencies {
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
+  implementation("androidx.lifecycle:lifecycle-runtime-compose:${libs.versions.androidx.lifecycle.get()}")
   implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.security.crypto)
   implementation(libs.androidx.work.runtime.ktx)
@@ -81,6 +82,7 @@ dependencies {
   implementation(libs.compose.foundation)
   implementation(libs.compose.material3)
   implementation(libs.compose.runtime)
+  implementation(libs.androidx.navigation.compose)
   debugImplementation(libs.compose.ui.tooling)
   debugImplementation(libs.compose.ui.test.manifest)
 
@@ -108,6 +110,9 @@ dependencies {
 
   // Logging
   implementation(libs.timber)
+
+  // Image Loading
+  implementation(libs.coil.compose)
 
   // Authentication
   implementation(libs.supabase.kotlin)

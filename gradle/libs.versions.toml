@@ -20,6 +20,10 @@ androidx-work = "2.9.1"
 # Jetpack Compose
 compose-bom = "2024.08.00"
 compose-compiler = "1.5.15"
+androidx-navigation = "2.8.2"
+
+# Image loading
+coil = "2.6.0"
 
 # Material Design
 material3 = "1.2.1"
@@ -71,6 +75,8 @@ compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidx-navigation" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 # Material Design
 material3 = { group = "com.google.android.material", name = "material", version.ref = "material3" }
