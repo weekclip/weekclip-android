@@ -1,0 +1,25 @@
+appId: cc.sunglint.weekclip
+name: skeleton-smoke
+tags:
+  - smoke
+---
+# The app launches and renders its start destination. That is the whole claim
+# while every screen is still a placeholder (PRD-0008 Phase 5 replaces them).
+# It is not a trivial claim: a Hilt or Compose wiring mistake fails here and
+# nowhere in the unit tests, which never construct the Activity.
+- launchApp:
+    clearState: true
+
+# By id, not by copy — `screen-title` is a testTag, exposed as a resource-id by
+# the testTagsAsResourceId opt-in in WeekclipApp. This assertion is also what
+# proves that opt-in still works: drop it and the selector silently matches
+# nothing.
+- assertVisible:
+    id: "screen-title"
+
+# By text, because the start destination is a contract: WeekclipRoutes.DASHBOARD
+# is where deep links land (PRD-0008 D4).
+- assertVisible: "Dashboard"
+- assertVisible: "Not implemented yet"
+
+- takeScreenshot: dashboard
