@@ -47,6 +47,34 @@ plain fact — no price, no top-up path, no "buy on the web".
 `local.properties` (gitignored) needs `sdk.dir=$HOME/Library/Android/sdk`, or set
 `ANDROID_HOME`.
 
+## UI verification (Maestro)
+
+Unit tests never construct the Activity, so until now nothing here could tell
+you the app actually launches. `maestro/` fixes that — flows that drive the
+installed app on a **USB-attached device** and report back machine-readably.
+
+```bash
+./scripts/run-maestro.sh          # build + install + run every flow
+```
+
+Needs the [Maestro](https://maestro.dev) CLI:
+`curl -fsSL "https://get.maestro.mobile.dev" | bash`. Results go to
+`build/maestro/`: JUnit XML, and for each failing step a screenshot, that
+step's view hierarchy as JSON, and the device logcat.
+
+Emulators do not work on the current dev Mac — `maestro/README.md` records the
+measurement and why a real device is the better answer anyway.
+
+**For agents:** `.mcp.json` registers Maestro's MCP server (it ships inside the
+CLI). That exposes `inspect_screen` (compact view hierarchy),
+`take_screenshot`, and `run` (inline flow YAML) — enough to look at the screen,
+act on it, and check the result without writing a flow file first. Prefer
+`inspect_screen` over `maestro hierarchy`: the raw dump on a Samsung device is
+~59KB of `systemui` and `sidegesturepad` chrome.
+
+CI runs `maestro check-syntax` on every flow. It cannot run the flows
+themselves — that needs hardware.
+
 ## Layout
 
 ```

@@ -9,7 +9,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,11 +24,23 @@ import androidx.navigation.compose.rememberNavController
  * land in Phase 5 (PRD-0008). What is real here is the route table: it is the
  * contract deep links resolve against.
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WeekclipApp() {
   val navController = rememberNavController()
 
-  Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+  // Compose publishes accessibility nodes with `text` but an empty
+  // `resource-id`, so UI-automation selectors written as `id: ...` match
+  // nothing — measured against a real device on 2026-08-14. This opt-in makes
+  // `Modifier.testTag("x")` surface as that node's resource-id, which is what
+  // `maestro/` flows select on. It has to sit at the root: the property applies
+  // to the whole subtree, and retrofitting it later means touching every
+  // screen. Costs nothing at runtime beyond one semantics property.
+  Scaffold(
+    modifier = Modifier
+      .fillMaxSize()
+      .semantics { testTagsAsResourceId = true }
+  ) { innerPadding ->
     NavHost(
       navController = navController,
       startDestination = WeekclipRoutes.DASHBOARD,
@@ -48,7 +64,12 @@ private fun PlaceholderScreen(name: String) {
     verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    Text(text = name, style = MaterialTheme.typography.headlineMedium)
+    // Tagged so `maestro/` can select the screen without depending on its copy.
+    Text(
+      text = name,
+      style = MaterialTheme.typography.headlineMedium,
+      modifier = Modifier.testTag("screen-title")
+    )
     Text(text = "Not implemented yet", style = MaterialTheme.typography.bodyMedium)
   }
 }

@@ -17,6 +17,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Maestro flows cannot RUN here — that needs a device, and the flows exist to
+  # be run against real hardware (maestro/README.md explains why the dev Mac's
+  # emulator is unusable). What CI can do is catch a flow that would have died
+  # on a typo, which is the failure mode that wastes a human's device session.
+  # It is a real check: `check-syntax` exits 1 on an unknown command.
+  flows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Install Maestro CLI
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Check flow syntax
+        env:
+          MAESTRO_CLI_NO_ANALYTICS: '1'
+        run: |
+          shopt -s nullglob
+          flows=(maestro/*.yaml)
+          if [ ${#flows[@]} -eq 0 ]; then
+            echo "no flows found under maestro/ — this job would pass vacuously" >&2
+            exit 1
+          fi
+          for f in "${flows[@]}"; do
+            echo "== $f"
+            maestro check-syntax "$f"
+          done
+
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 30
