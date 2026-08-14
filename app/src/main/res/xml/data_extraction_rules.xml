@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ backup/transfer rules.
+     NOTE: the previous version of this file contained *network security config*
+     syntax (<domain-config cleartextTrafficPermitted>) — a different schema
+     entirely, which lint rejected as `FullBackupContent` errors (#148).
+     android:allowBackup is false, so these rules are belt-and-braces: the
+     encrypted token store must never leave the device either way. -->
 <data-extraction-rules>
-  <domain-config cleartextTrafficPermitted="false">
-    <domain includeSubdomains="true">weekclip.com</domain>
-    <domain includeSubdomains="true">dev-service-api.weekclip.com</domain>
-  </domain-config>
+  <cloud-backup>
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="file" path="." />
+    <exclude domain="database" path="." />
+  </cloud-backup>
+  <device-transfer>
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="file" path="." />
+    <exclude domain="database" path="." />
+  </device-transfer>
 </data-extraction-rules>

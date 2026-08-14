@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <!-- Required permissions -->
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-  <!-- Background upload permissions -->
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
-    tools:node="remove" />
-
-  <!-- Optional: Storage access for media selection -->
-  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+  <!-- Nothing else is declared yet, on purpose. Permissions this skeleton does
+       not exercise (POST_NOTIFICATIONS, READ_MEDIA_*, FOREGROUND_SERVICE_*)
+       arrive with the code that needs them:
+         · media picker + READ_MEDIA_VISUAL_USER_SELECTED  → Phase 5
+         · foreground service + notifications for upload    → Phase 5 (D8)
+       Declaring them early ships permissions nothing uses and, for READ_MEDIA_*,
+       trips lint's SelectedPhotoAccess check with no code to fix. -->
 
   <application
     android:name=".WeekclipApplication"
@@ -25,8 +22,7 @@
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/Theme.Weekclip"
-    android:usesCleartextTraffic="false"
-    tools:targetApi="31">
+    android:usesCleartextTraffic="false">
 
     <activity
       android:name=".MainActivity"
@@ -36,6 +32,10 @@
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
+      <!-- App Links intent-filters (PRD-0008 D4/N2) are added in Phase 3,
+           together with the assetlinks.json that weekclip.com must serve.
+           Declaring them before the domain verifies would give users a
+           chooser dialog instead of a verified link. -->
     </activity>
 
   </application>

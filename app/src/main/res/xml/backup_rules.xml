@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Pre-Android-12 backup rules. android:allowBackup is false, so nothing is
+     backed up; this file exists because the manifest references it. -->
 <full-backup-content>
-  <include domain="sharedpref" path="." />
-  <include domain="file" path="." />
-  <include domain="database" path="." />
-
-  <exclude domain="sharedpref" path="androidx.security.crypto.prefs" />
+  <exclude domain="sharedpref" path="." />
+  <exclude domain="file" path="." />
+  <exclude domain="database" path="." />
 </full-backup-content>
