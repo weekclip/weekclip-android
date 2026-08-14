@@ -1,81 +1,74 @@
-# WeekClip Android
+# weekclip-android
 
-Modern Android native app for WeekClip with Jetpack Compose and MVVM architecture.
+Native Android client for weekclip.
 
-## Architecture
+- **PRD**: `weekclip-harness/wiki/prd/PRD-0008-native-app-port.md`
+- **Stack decisions**: `weekclip-harness/wiki/adr/ADR-0002-native-app-stack.md`
+- **Port scope**: `docs/product/native-app-feature-inventory.md` (superrepo)
 
-### Modern Stack (2024-2026)
-- **UI Framework**: Jetpack Compose (declarative UI)
-- **Architecture Pattern**: MVVM + Clean Architecture (3-layer)
-- **State Management**: StateFlow + Kotlin coroutines
-- **Dependency Injection**: Hilt
-- **Networking**: Retrofit + OkHttp + kotlinx-serialization
-- **Background Tasks**: WorkManager (for scheduled uploads)
-- **Async**: Kotlin Coroutines + async/await
+## Stack
 
-### Project Structure
-```
-app/
-├── src/main/
-│   ├── kotlin/com/weekclip/android/
-│   │   ├── data/              # Data layer (repositories, API clients)
-│   │   ├── domain/            # Domain layer (use cases, business logic)
-│   │   ├── presentation/      # Presentation layer (ViewModels, Composables)
-│   │   ├── di/               # Dependency injection modules
-│   │   └── ui/               # UI components and themes
-│   └── res/                  # Android resources
-└── build.gradle.kts          # Build configuration
-```
+Every choice below has a recorded reason in ADR-0002. Where a decision looks
+unusual, the reason is in the third column — not in someone's memory.
 
-## Setup
+| Area | Choice | Why |
+|------|--------|-----|
+| UI | Jetpack Compose | Default for new Android apps |
+| State | ViewModel + StateFlow | — |
+| Navigation | **Navigation 2** (`navigation-compose`) | Navigation 3 is still alpha (`1.2.0-alpha02`, 2026-08). ADR-0002 D2 |
+| DI | Hilt (via KSP) | Compile-time verification |
+| Networking | Retrofit + OkHttp | ADR-0002 D6 |
+| Playback | **Media3 / ExoPlayer** | The platform `MediaPlayer`'s HLS support is not production-usable, and 360p HLS is the whole browsing tier (PRD-0007). ADR-0002 D5 |
+| Background upload | WorkManager + Foreground Service | Phase 5. Survives backgrounding, not task-kill (PRD-0008 D8) |
+| Secure storage | EncryptedSharedPreferences / DataStore | — |
 
-### Prerequisites
-- Android Studio Jellyfish (2023.3.1) or newer
-- JDK 17+
-- Android SDK 35+
-- Gradle 8.4+
+**No payment code, ever.** PRD-0008 D3 requires zero payment-related strings in
+the app binary; a CI gate enforces it (N6). Capacity shortfall is reported as a
+plain fact — no price, no top-up path, no "buy on the web".
 
-### Building
+## Requirements
+
+- JDK 17+ (verified on Corretto 21)
+- Android SDK platform **37** (Android 17) + build-tools
+- No local Gradle install needed — **the wrapper is committed**
+
+> The wrapper's absence is why this repo's CI failed at `chmod +x gradlew` for
+> its entire history. Do not gitignore `gradlew` or `gradle/wrapper/`.
+
+## Build
+
 ```bash
-./gradlew build
-./gradlew test
+./gradlew testDebugUnitTest     # unit tests
+./gradlew lintDebug             # lint (abortOnError = true)
+./gradlew assembleDebug         # debug APK
+./gradlew assembleRelease       # release APK (R8 minify + resource shrink)
 ```
 
-### Running
-```bash
-./gradlew installDebug
+`local.properties` (gitignored) needs `sdk.dir=$HOME/Library/Android/sdk`, or set
+`ANDROID_HOME`.
+
+## Layout
+
+```
+app/src/main/kotlin/cc/sunglint/weekclip/
+├── WeekclipApplication.kt      # @HiltAndroidApp
+├── MainActivity.kt             # single activity, Compose host
+├── core/network/               # service base URLs (billing deliberately absent)
+├── di/                         # Hilt modules
+└── ui/
+    ├── navigation/             # route table + NavHost
+    └── theme/                  # placeholder palette until Phase 5 wires the DS
 ```
 
-## Development
+### The route table is a contract
 
-### Code Style
-- Kotlin with consistent formatting (ktlint compatible)
-- Sealed classes for sealed types
-- Data classes for models
-- Extension functions for utility
+`ui/navigation/WeekclipRoutes.kt` mirrors weekclip-web's URLs one-for-one. That
+is load-bearing, not cosmetic: PRD-0008 D4 routes `/studios/:id/media/:mid`,
+`/invite/:token` and `/share/:token` into the app via App Links, and PRD-0007 D6
+named the media route as "the boundary where native push/pop attaches". If these
+drift from the web paths, deep links stop resolving. `WeekclipRoutesTest` asserts
+each builder against the pattern it fills.
 
-### Testing
-- Unit tests with MockK
-- Integration tests with Hilt
-- UI tests with Compose test framework
+## Status
 
-## Key Features
-
-### Current
-- [x] Modern Compose UI framework
-- [x] Dependency injection with Hilt
-- [x] Network layer with Retrofit
-- [x] MVVM architecture
-
-### Planned
-- [ ] Video playback
-- [ ] Background upload with WorkManager
-- [ ] Scheduled WiFi upload
-- [ ] Media gallery integration
-- [ ] User authentication
-
-## References
-- [Jetpack Compose Documentation](https://developer.android.com/jetpack/compose)
-- [Hilt Dependency Injection](https://dagger.dev/hilt/)
-- [WorkManager Guide](https://developer.android.com/topic/libraries/architecture/workmanager)
-- [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html)
+Skeleton only — every screen is a placeholder. Feature work is Phase 5 of PRD-0008.

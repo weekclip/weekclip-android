@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Keep the -v26 qualifier. Lint (ObsoleteSdkInt) suggests plain `mipmap-anydpi`
+     because minSdk is 28, but AAPT normalises a bare `anydpi` to `anydpi-v4` and
+     then fails to resolve the manifest's `@mipmap/ic_launcher` reference:
+       AAPT: error: resource mipmap/ic_launcher not found
+     Verified 2026-08-14. The lint warning is accepted, not the advice. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+  <background android:drawable="@color/ic_launcher_background" />
+  <foreground android:drawable="@drawable/ic_launcher_foreground" />
+  <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+</adaptive-icon>

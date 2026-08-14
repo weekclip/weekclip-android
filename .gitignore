@@ -1,9 +1,12 @@
 # Gradle files
 .gradle/
 build/
-!build/
 *.jks
 *.keystore
+
+# The Gradle wrapper IS committed on purpose — its absence is why CI failed at
+# `chmod +x gradlew` for this repo's entire history (#148). Do not add
+# `gradle-wrapper.jar` or `gradlew` here.
 
 # Local configuration file (sdk path, etc)
 local.properties
