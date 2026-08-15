@@ -68,6 +68,23 @@ which happened — `signed in` vs `restored a stored session … no network need
 and that difference is the point of the feature. Without them the app behaves
 like a release build: no session, `AppError.Unauthorized`, error screen.
 
+### Getting a phone onto the dev tier
+
+`scripts/device-net-via-mac.sh` lends this Mac's network — WireGuard included —
+to a USB-attached phone, so the device can reach `*.weekclip.dev`. The phone has
+no VPN peer of its own and is not getting one, so this is the path.
+
+```bash
+scripts/device-net-via-mac.sh          # hold it open; Ctrl-C restores the phone
+scripts/device-net-via-mac.sh --stop   # clean up after a crash
+scripts/device-net-via-mac.sh --check  # report state
+```
+
+It sets a **device-wide** proxy: everything on the phone routes through the Mac
+while it runs, not just this app. Two things it will tell you that are easy to
+get wrong on your own — the Mac must actually be on the VPN (it checks), and
+`adb shell curl` ignores the proxy setting even when the app is honouring it.
+
 > ⚠️ **The dev API is behind a WAF that allows exactly one address** — the
 > WireGuard egress `158.247.237.200` (superrepo `docs/ops/security-topology-161.md`
 > §3). Off the VPN, `*.weekclip.dev` answers **403 with a Cloudflare HTML page**,
