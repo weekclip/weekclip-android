@@ -20,6 +20,18 @@ import javax.inject.Singleton
  * be allowed in may also be too old to sign in, so the check must work before
  * there is a session. The interceptor still attaches a bearer if one happens to
  * exist — harmless, and not worth a second HTTP client to avoid.
+ *
+ * ⚠️ **This app asks on every launch; iOS does not.** The response carries
+ * `Cache-Control: public, max-age=300`. The `OkHttpClient` in `NetworkModule`
+ * is built with no `Cache`, so OkHttp ignores it and goes to the network each
+ * time — while `URLSession` on iOS honours it and can keep letting a build
+ * through for up to five minutes after the threshold is raised.
+ *
+ * Measured on 2026-08-15 by raising the dev minimum to 99 and watching both
+ * apps: this one blocked on the next launch, iOS blocked five minutes later.
+ * Neither is wrong — both are inside the budget the TTL already buys — but the
+ * difference reads as "the iOS gate is broken" if you meet it during an
+ * incident instead of here.
  */
 @Singleton
 class DefaultAppReleaseRepository @Inject constructor(
