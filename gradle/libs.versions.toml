@@ -20,12 +20,18 @@ core-ktx = "1.19.0"
 activity-compose = "1.13.0"
 lifecycle = "2.11.0"
 navigation-compose = "2.9.8"   # Navigation 2 — ADR-0002 D2
+hilt-navigation-compose = "1.4.0"
 work = "2.11.2"
 datastore = "1.2.1"
 security-crypto = "1.1.0"
 
 # Compose
 compose-bom = "2026.08.00"
+
+# Images — every media surface in the inventory renders a remote poster
+# (posterUrl / posterThumbUrl on StudioMediaItem), so this is load-bearing
+# rather than a convenience.
+coil = "3.5.0"
 
 # Playback — Media3/ExoPlayer is effectively mandatory (ADR-0002 D5):
 # the platform MediaPlayer's HLS support is not production-usable.
@@ -42,13 +48,20 @@ junit = "4.13.2"
 androidx-test-junit = "1.3.0"
 espresso = "3.7.0"
 mockk = "1.14.11"
+turbine = "1.2.1"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+# collectAsStateWithLifecycle lives here, NOT in lifecycle-runtime-ktx. Without
+# it the only way to read a StateFlow in Compose is collectAsState(), which
+# keeps collecting while the app is backgrounded.
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+# hiltViewModel(). Hilt itself cannot construct a ViewModel for a NavBackStackEntry.
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "security-crypto" }
@@ -62,6 +75,11 @@ compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
+
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+# Coil 3 ships no network fetcher by default. Routing it through the same OkHttp
+# instance means one connection pool and one place to add auth headers.
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 
 media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
 media3-exoplayer-hls = { module = "androidx.media3:media3-exoplayer-hls", version.ref = "media3" }
@@ -80,6 +98,11 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 junit = { module = "junit:junit", version.ref = "junit" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+# Exercises Retrofit + the kotlinx-serialization converter against real bytes
+# over a real socket. A hand-written fake of the API interface would skip
+# exactly the layer most likely to be wrong: the wire envelope.
+okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
 androidx-test-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-junit" }
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
 
