@@ -1,6 +1,8 @@
 package cc.sunglint.weekclip.di
 
+import cc.sunglint.weekclip.data.repository.DefaultAppReleaseRepository
 import cc.sunglint.weekclip.data.repository.DefaultStudioRepository
+import cc.sunglint.weekclip.domain.repository.AppReleaseRepository
 import cc.sunglint.weekclip.domain.repository.StudioRepository
 import dagger.Binds
 import dagger.Module
@@ -23,4 +25,8 @@ abstract class RepositoryModule {
   @Binds
   @Singleton
   abstract fun bindStudioRepository(impl: DefaultStudioRepository): StudioRepository
+
+  @Binds
+  @Singleton
+  abstract fun bindAppReleaseRepository(impl: DefaultAppReleaseRepository): AppReleaseRepository
 }

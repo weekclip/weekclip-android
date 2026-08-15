@@ -18,6 +18,12 @@
 
   <string name="action_retry">Try again</string>
 
+  <!-- PRD-0008 D6①. "Update" here is about the app binary, not about capacity
+       or anything you could pay for — D3 still holds in this file. -->
+  <string name="update_required_title">Update Weekclip to continue</string>
+  <string name="update_required_body">This version is no longer supported.</string>
+  <string name="update_required_action">Open the store</string>
+
   <string name="error_offline">You appear to be offline.</string>
   <string name="error_timeout">The server took too long to respond.</string>
   <string name="error_unauthorized">Your session has ended. Sign in again.</string>
