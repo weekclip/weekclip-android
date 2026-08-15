@@ -7,9 +7,9 @@ name: Android CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, dev]
   pull_request:
-    branches: [main, develop]
+    branches: [main, dev]
 
 # A newer push supersedes an in-flight run for the same ref.
 concurrency:
