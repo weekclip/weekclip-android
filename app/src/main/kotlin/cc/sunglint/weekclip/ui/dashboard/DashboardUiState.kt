@@ -20,6 +20,25 @@ data class DashboardUiState(
   val studios: List<Studio> = emptyList(),
   val error: AppError? = null
 ) {
+  /**
+   * Whether to cover the screen with a loader.
+   *
+   * True while refreshing *if there is nothing to keep on screen*. Found by
+   * driving the app on a real device (2026-08-15): tapping retry from the error
+   * state clears the error, and with no rows loaded the screen fell through to
+   * `isEmpty` and flashed "No studios yet." before the error came back. A retry
+   * that briefly claims the account has no studios is worse than a spinner.
+   *
+   * A refresh *with* rows still shows the rows — that is the whole reason
+   * [isRefreshing] is separate from [isLoading].
+   *
+   * Pinned by `DashboardViewModelTest`, not by a Maestro flow. A device flow was
+   * tried and **could not fail on the buggy build**: with no network the request
+   * fails instantly, so the wrong frame is gone before the assertion runs. A
+   * check that cannot fail is not a check.
+   */
+  val showFullScreenLoader: Boolean get() = isLoading || (isRefreshing && studios.isEmpty())
+
   /** Distinguishes "no studios" from "not loaded yet", which read the same otherwise. */
-  val isEmpty: Boolean get() = !isLoading && error == null && studios.isEmpty()
+  val isEmpty: Boolean get() = !showFullScreenLoader && error == null && studios.isEmpty()
 }

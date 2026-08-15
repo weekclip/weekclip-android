@@ -82,7 +82,7 @@ fun DashboardScreen(
     )
 
     when {
-      uiState.isLoading -> StateMessage(
+      uiState.showFullScreenLoader -> StateMessage(
         tag = "dashboard-loading",
         content = { CircularProgressIndicator() }
       )

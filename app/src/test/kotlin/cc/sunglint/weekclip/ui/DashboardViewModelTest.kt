@@ -146,6 +146,48 @@ class DashboardViewModelTest {
   }
 
   @Test
+  fun `retrying from the error state shows a loader, not the empty state`() = runTest(dispatcher) {
+    // Found on a real device: tapping retry cleared the error, and with no rows
+    // loaded the screen fell through to isEmpty and flashed "No studios yet."
+    // before the failure came back.
+    val repo = FakeStudioRepository(AppResult.Failure(AppError.Offline))
+    val viewModel = DashboardViewModel(GetStudiosUseCase(repo))
+    runCurrent()
+    assertEquals(AppError.Offline, viewModel.uiState.value.error)
+
+    viewModel.uiState.test {
+      awaitItem()
+
+      viewModel.refresh()
+      runCurrent()
+
+      val inFlight = awaitItem()
+      assertEquals(null, inFlight.error)
+      assertTrue("a retry with nothing on screen must show the loader", inFlight.showFullScreenLoader)
+      assertFalse("and must never claim the account has no studios", inFlight.isEmpty)
+      cancelAndIgnoreRemainingEvents()
+    }
+  }
+
+  @Test
+  fun `refreshing with rows on screen keeps them instead of covering them`() = runTest(dispatcher) {
+    val repo = FakeStudioRepository(AppResult.Success(listOf(studio("1", "Family", null))))
+    val viewModel = DashboardViewModel(GetStudiosUseCase(repo))
+    runCurrent()
+
+    viewModel.uiState.test {
+      awaitItem()
+      viewModel.refresh()
+      runCurrent()
+
+      val inFlight = awaitItem()
+      assertTrue(inFlight.isRefreshing)
+      assertFalse("rows are on screen — do not cover them", inFlight.showFullScreenLoader)
+      cancelAndIgnoreRemainingEvents()
+    }
+  }
+
+  @Test
   fun `isEmpty distinguishes no studios from not loaded yet`() = runTest(dispatcher) {
     val repo = FakeStudioRepository(AppResult.Success(emptyList()))
     val viewModel = DashboardViewModel(GetStudiosUseCase(repo))
