@@ -1,4 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  PRD-0008 D3: no string in this file may name a way to pay. The app can say a
+  studio is out of room; it may not say what to do about it.
+  `scripts/check-no-payment-strings.sh` checks this file first, and CI runs that
+  script before it installs a toolchain.
+-->
 <resources>
   <string name="app_name">Weekclip</string>
+
+  <string name="dashboard_title">Studios</string>
+  <string name="dashboard_empty">No studios yet.</string>
+
+  <string name="role_owner">Owner</string>
+  <string name="role_editor">Editor</string>
+  <string name="role_viewer">Viewer</string>
+  <string name="role_member">Member</string>
+
+  <string name="action_retry">Try again</string>
+
+  <string name="error_offline">You appear to be offline.</string>
+  <string name="error_timeout">The server took too long to respond.</string>
+  <string name="error_unauthorized">Your session has ended. Sign in again.</string>
+  <string name="error_not_found">That is no longer available.</string>
+  <string name="error_generic">Something went wrong. Please try again.</string>
 </resources>

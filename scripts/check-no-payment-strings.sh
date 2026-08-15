@@ -9,12 +9,18 @@
 # no "buy it on the web".
 #
 # What this checks:
-#   1. String resources  — app/src/main/res/values*/strings.xml
+#   1. String resources  — app/src/main/res/values*/strings.xml, comments stripped
 #   2. Kotlin string literals, with comments stripped first
 #
 # The comment-stripping matters: this repo's source deliberately *discusses*
 # billing in comments (explaining why it is absent). Those must not trip the
 # gate, and the compiler drops them anyway.
+#
+# That applies to XML too, and used not to: `<!-- ... -->` was scanned as if it
+# shipped. It does not — aapt2 drops XML comments exactly as kotlinc drops
+# Kotlin ones — and the first thing the un-stripped version ever flagged was
+# strings.xml's own header comment explaining this rule. A gate that fires on
+# its own documentation trains people to disable it.
 #
 # What this does NOT check: third-party library internals. Nothing in the
 # dependency set (Compose, Retrofit, OkHttp, Media3, Hilt) ships a billing SDK;
@@ -31,18 +37,41 @@ cd "$ROOT"
 # Words that would signal a purchase path to a store reviewer. Deliberately
 # narrow: "capacity" and "storage" are fine — the app must be able to say the
 # user is out of room. What it must never do is name a way to pay.
-FORBIDDEN='checkout|polar|purchase|subscription|subscribe|top[ _-]?up|billing|payment|credit[ _-]?card|paywall|upgrade[ _-]?plan|refund|invoice|price|pricing|\$[0-9]'
+#
+# `upgrade.{0,20}plan` and `\bplans?\b` were added on 2026-08-15 after this
+# gate was tested against the sentence that was actually living in
+# weekclip-ios (`AppError.insufficientCapacity`'s recovery suggestion):
+#
+#     "Please upgrade your plan or delete some content"
+#
+# The old pattern had `upgrade[ _-]?plan`, which does not match "upgrade YOUR
+# plan", and nothing else in the list matched either — so both gates passed a
+# real Guideline 3.1.1 string. A gate is only worth what you have watched it
+# reject.
+FORBIDDEN='checkout|polar|purchase|subscription|subscribe|top[ _-]?up|billing|payment|credit[ _-]?card|paywall|upgrade.{0,20}plan|\bplans?\b|refund|invoice|price|pricing|\$[0-9]'
 
 fail=0
 
-echo "== 1/2  string resources =="
+echo "== 1/2  string resources (comments stripped) =="
 res_files=$(find app/src/main/res -name 'strings.xml' 2>/dev/null || true)
 if [ -z "$res_files" ]; then
   echo "   (no strings.xml found)"
 else
-  # shellcheck disable=SC2086
-  if hits=$(grep -rniE "$FORBIDDEN" $res_files); then
-    echo "$hits" | sed 's/^/   FORBIDDEN: /'
+  xml_hits=""
+  while IFS= read -r f; do
+    # -0777 slurps so a comment spanning lines is removed whole. Line numbers
+    # are recomputed after stripping, so they point into the stripped view; the
+    # matched text is printed alongside, which is what you actually search for.
+    stripped=$(perl -0777 -pe 's{<!--.*?-->}{}gs' "$f")
+    if match=$(printf '%s\n' "$stripped" | grep -niE "$FORBIDDEN" || true); then
+      if [ -n "$match" ]; then
+        xml_hits="${xml_hits}${f}: ${match}"$'\n'
+      fi
+    fi
+  done < <(printf '%s\n' "$res_files")
+
+  if [ -n "$xml_hits" ]; then
+    printf '%s' "$xml_hits" | sed 's/^/   FORBIDDEN: /'
     fail=1
   else
     echo "   clean"

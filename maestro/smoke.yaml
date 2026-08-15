@@ -3,10 +3,9 @@ name: skeleton-smoke
 tags:
   - smoke
 ---
-# The app launches and renders its start destination. That is the whole claim
-# while every screen is still a placeholder (PRD-0008 Phase 5 replaces them).
-# It is not a trivial claim: a Hilt or Compose wiring mistake fails here and
-# nowhere in the unit tests, which never construct the Activity.
+# The app launches, renders its start destination, and completes one full pass
+# through the spine. A Hilt or Compose wiring mistake fails here and nowhere in
+# the unit tests, which never construct the Activity.
 - launchApp:
     clearState: true
 
@@ -19,7 +18,21 @@ tags:
 
 # By text, because the start destination is a contract: WeekclipRoutes.DASHBOARD
 # is where deep links land (PRD-0008 D4).
-- assertVisible: "Dashboard"
-- assertVisible: "Not implemented yet"
+- assertVisible: "Studios"
+
+# The real claim. `dashboard-loading` is the initial state, so its *disappearance*
+# means DashboardViewModel was constructed by Hilt, GetStudiosUseCase ran, the
+# repository answered, and the new state reached Compose. Whether the answer was
+# a list or an error does not matter here — both clear `isLoading`, and which one
+# you get depends on whether this machine can reach the WAF-gated dev API. This
+# flow asserts the spine, not the network.
+# 45s, not 15s. The wait has to outlast the HTTP client, or a slow network
+# fails this flow before the request itself gives up — and the report would
+# blame the app. NetworkModule budgets 15s connect + 30s read, so 45s is that
+# ceiling plus room to draw.
+- extendedWaitUntil:
+    notVisible:
+      id: "dashboard-loading"
+    timeout: 45000
 
 - takeScreenshot: dashboard

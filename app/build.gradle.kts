@@ -32,9 +32,21 @@ android {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+
+      // Production hosts. These mirror weekclip-web's defaults in
+      // `src/shared/api/client.ts` (getApiBaseUrl / getUserApiBaseUrl) — the
+      // app talks to the same two services the browser does.
+      buildConfigField("String", "API_BASE_URL", "\"https://service-api.weekclip.com/api/v1\"")
+      buildConfigField("String", "USER_API_BASE_URL", "\"https://user-api.weekclip.com/api/v1\"")
     }
     debug {
       isMinifyEnabled = false
+
+      // The dev tier. Note this is `.dev`, not `.com`: the two are different
+      // Cloudflare accounts with different databases (see the superrepo's
+      // secrets tier table). A debug build must never reach production data.
+      buildConfigField("String", "API_BASE_URL", "\"https://service-api.weekclip.dev/api/v1\"")
+      buildConfigField("String", "USER_API_BASE_URL", "\"https://user-api.weekclip.dev/api/v1\"")
     }
   }
 
@@ -51,6 +63,9 @@ android {
 
   buildFeatures {
     compose = true
+    // Off by default since AGP 8. The base URLs above are the reason it is on:
+    // they must differ per build type, which rules out a Kotlin constant.
+    buildConfig = true
   }
 
   lint {
@@ -71,7 +86,9 @@ dependencies {
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
+  implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.navigation.compose)
+  implementation(libs.androidx.hilt.navigation.compose)
   implementation(libs.androidx.work.runtime.ktx)
   implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.security.crypto)
@@ -84,6 +101,9 @@ dependencies {
   implementation(libs.compose.material3)
   debugImplementation(libs.compose.ui.tooling)
   debugImplementation(libs.compose.ui.test.manifest)
+
+  implementation(libs.coil.compose)
+  implementation(libs.coil.network.okhttp)
 
   // Playback (ADR-0002 D5 / PRD-0007 1층: 360p HLS)
   implementation(libs.media3.exoplayer)
@@ -103,6 +123,8 @@ dependencies {
   testImplementation(libs.junit)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.turbine)
+  testImplementation(libs.okhttp.mockwebserver)
 
   androidTestImplementation(libs.androidx.test.junit)
   androidTestImplementation(libs.androidx.test.espresso.core)

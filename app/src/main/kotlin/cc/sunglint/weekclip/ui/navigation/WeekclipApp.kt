@@ -18,11 +18,18 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import cc.sunglint.weekclip.ui.dashboard.DashboardRoute
 
 /**
- * Skeleton shell. Every destination below is a placeholder — feature screens
- * land in Phase 5 (PRD-0008). What is real here is the route table: it is the
- * contract deep links resolve against.
+ * Application shell.
+ *
+ * Dashboard is a real screen — it is the vertical slice that proves the spine
+ * (Hilt -> ViewModel -> use case -> repository -> Retrofit -> the live
+ * `GET /studios` contract) is connected end to end. The rest are still
+ * placeholders and land in Phase 5 (PRD-0008).
+ *
+ * The route table is the other real thing here: it is the contract deep links
+ * resolve against.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -46,7 +53,11 @@ fun WeekclipApp() {
       startDestination = WeekclipRoutes.DASHBOARD,
       modifier = Modifier.padding(innerPadding)
     ) {
-      composable(WeekclipRoutes.DASHBOARD) { PlaceholderScreen("Dashboard") }
+      composable(WeekclipRoutes.DASHBOARD) {
+        DashboardRoute(
+          onStudioClick = { studioId -> navController.navigate(WeekclipRoutes.studio(studioId)) }
+        )
+      }
       composable(WeekclipRoutes.STUDIO) { PlaceholderScreen("Studio") }
       composable(WeekclipRoutes.MEDIA) { PlaceholderScreen("Media") }
       composable(WeekclipRoutes.MEMBERS) { PlaceholderScreen("Members") }

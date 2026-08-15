@@ -77,16 +77,61 @@ themselves — that needs hardware.
 
 ## Layout
 
+Three layers, dependencies pointing inward: `ui` → `domain` ← `data`. The UI
+never names a Retrofit or serialization type; `domain` has no `android.*` import
+at all.
+
 ```
 app/src/main/kotlin/cc/sunglint/weekclip/
 ├── WeekclipApplication.kt      # @HiltAndroidApp
 ├── MainActivity.kt             # single activity, Compose host
-├── core/network/               # service base URLs (billing deliberately absent)
-├── di/                         # Hilt modules
+├── core/
+│   ├── network/                # base URLs (from BuildConfig), envelope,
+│   │                           # auth interceptor, session-token seam
+│   └── result/                 # AppError + AppResult — the closed failure set
+├── domain/                     # pure Kotlin: models, repository interfaces, use cases
+├── data/
+│   ├── remote/                 # Retrofit service, DTOs, ApiCall (error mapping)
+│   └── repository/             # implementations of the domain interfaces
+├── di/                         # Hilt modules (network, repositories, dispatchers)
 └── ui/
+    ├── dashboard/              # UiState + ViewModel + stateless screen
     ├── navigation/             # route table + NavHost
     └── theme/                  # placeholder palette until Phase 5 wires the DS
 ```
+
+### Base URLs come from the build type
+
+`buildConfigField` in `app/build.gradle.kts` sets `API_BASE_URL` /
+`USER_API_BASE_URL` per build type — debug points at `*.weekclip.dev`, release at
+`*.weekclip.com`. These mirror the `routes` in each service's `wrangler.jsonc`.
+The two tiers are **separate Cloudflare accounts with separate databases**, so a
+constant shared between them would be a way to write debug traffic into
+production. `ApiEndpoints` rejects a blank URL loudly rather than letting
+Retrofit fail from inside `HttpUrl`.
+
+### Errors are a closed set
+
+`core/result/AppError` is what the UI is allowed to see; `data/remote/ApiCall`
+is the only place transport exceptions become one. That means the `when` in
+`DashboardScreen` is exhaustive, and adding an error case breaks the build at
+every screen that has to decide what to say about it — which is the point.
+
+`AppError` carries no user-facing copy. Strings live in `strings.xml` so they
+are translatable and so the payment-string gate has one file to read.
+
+### The dashboard is the reference screen
+
+`ui/dashboard/` is the shape every Phase 5 screen should copy: one immutable
+`UiState`, a read-only `StateFlow` (Kotlin explicit backing field), a stateless
+`@Composable` that takes values and emits events, and a thin `Route` wrapper
+that is the only thing which knows a ViewModel exists.
+
+It is also the vertical slice that proves the spine is connected: it runs a real
+`GET /studios` against the contract in weekclip-api. `StudioRepositoryContractTest`
+pins that contract with MockWebServer — real JSON over a real socket, because a
+fake of the API interface would skip the envelope, which is the part most likely
+to be wrong.
 
 ### The route table is a contract
 
@@ -99,4 +144,14 @@ each builder against the pattern it fills.
 
 ## Status
 
-Skeleton only — every screen is a placeholder. Feature work is Phase 5 of PRD-0008.
+Spine, not features. The dashboard is real and reaches the live API; every other
+destination is still a placeholder. Feature work is Phase 5 of PRD-0008.
+
+Not built yet, on purpose:
+
+| Missing | Why it is not here |
+|---|---|
+| Local cache (Room) | PRD-0008 states no offline requirement. A schema with no read path is a migration liability from day one; the repository interface is the seam that makes it addable |
+| Auth / session storage | Task 148.5. `SessionTokenProvider` is the seam — today it returns null and requests come back 401, which the UI already renders |
+| One-off event channel (`SharedFlow`) | There is no event to send yet. An empty channel plus an unread `LaunchedEffect` is worse than nothing |
+| App Links intent filters | Task 148.5, and they need `assetlinks.json` served from `weekclip.com` first. Declaring them before the domain verifies gives users a chooser dialog |
