@@ -1,5 +1,7 @@
 package cc.sunglint.weekclip.ui.navigation
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,17 +10,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import cc.sunglint.weekclip.ui.dashboard.DashboardRoute
+import cc.sunglint.weekclip.ui.update.AppGateUiState
+import cc.sunglint.weekclip.ui.update.AppGateViewModel
+import cc.sunglint.weekclip.ui.update.UpdateRequiredScreen
 
 /**
  * Application shell.
@@ -33,8 +42,10 @@ import cc.sunglint.weekclip.ui.dashboard.DashboardRoute
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun WeekclipApp() {
+fun WeekclipApp(gateViewModel: AppGateViewModel = hiltViewModel()) {
   val navController = rememberNavController()
+  val context = LocalContext.current
+  val gate by gateViewModel.uiState.collectAsStateWithLifecycle()
 
   // Compose publishes accessibility nodes with `text` but an empty
   // `resource-id`, so UI-automation selectors written as `id: ...` match
@@ -48,7 +59,24 @@ fun WeekclipApp() {
       .fillMaxSize()
       .semantics { testTagsAsResourceId = true }
   ) { innerPadding ->
-    NavHost(
+    // The version gate wraps the whole app rather than sitting on one screen
+    // (PRD-0008 D6①). `Checking` renders nothing: starting at "allowed" would
+    // flash the dashboard for a frame before a block landed, and starting at
+    // "blocked" would flash a force-update screen at everyone.
+    when (val state = gate) {
+      AppGateUiState.Checking -> Unit
+
+      is AppGateUiState.UpdateRequired -> UpdateRequiredScreen(
+        storeUrl = state.storeUrl,
+        onOpenStore = { url ->
+          context.startActivity(
+            Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+          )
+        },
+        modifier = Modifier.padding(innerPadding)
+      )
+
+      AppGateUiState.Allowed -> NavHost(
       navController = navController,
       startDestination = WeekclipRoutes.DASHBOARD,
       modifier = Modifier.padding(innerPadding)
@@ -64,6 +92,7 @@ fun WeekclipApp() {
       composable(WeekclipRoutes.CAPACITY) { PlaceholderScreen("Capacity") }
       composable(WeekclipRoutes.INVITE) { PlaceholderScreen("Invite") }
       composable(WeekclipRoutes.SHARE) { PlaceholderScreen("Share") }
+      }
     }
   }
 }

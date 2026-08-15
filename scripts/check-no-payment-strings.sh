@@ -10,7 +10,15 @@
 #
 # What this checks:
 #   1. String resources  — app/src/main/res/values*/strings.xml, comments stripped
-#   2. Kotlin string literals, with comments stripped first
+#   2. Kotlin string literals in app/src/main and app/src/debug, comments stripped
+#
+# Scope is the code that becomes the APK. `app/src/test` and `app/src/androidTest`
+# are excluded on purpose (2026-08-15): they are not in any binary a reviewer can
+# see, and a test asserting that the app does NOT own a payment path has to name
+# that path to assert it — `WeekclipDeepLinkTest` requires `/billing/products` to
+# resolve to null, which is *evidence for* D3, not a violation of it. The iOS
+# gate reached the same conclusion first and limited itself to `Sources/`+`App/`
+# for exactly this reason; this is that correction, applied here.
 #
 # The comment-stripping matters: this repo's source deliberately *discusses*
 # billing in comments (explaining why it is absent). Those must not trip the
@@ -93,7 +101,7 @@ while IFS= read -r f; do
       fi
     fi
   fi
-done < <(find app/src -name '*.kt' 2>/dev/null)
+done < <(find app/src/main app/src/debug -name '*.kt' 2>/dev/null)
 
 if [ -n "$kt_hits" ]; then
   printf '%s' "$kt_hits" | sed 's/^/   FORBIDDEN: /'
