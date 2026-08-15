@@ -37,7 +37,18 @@ cd "$ROOT"
 # Words that would signal a purchase path to a store reviewer. Deliberately
 # narrow: "capacity" and "storage" are fine — the app must be able to say the
 # user is out of room. What it must never do is name a way to pay.
-FORBIDDEN='checkout|polar|purchase|subscription|subscribe|top[ _-]?up|billing|payment|credit[ _-]?card|paywall|upgrade[ _-]?plan|refund|invoice|price|pricing|\$[0-9]'
+#
+# `upgrade.{0,20}plan` and `\bplans?\b` were added on 2026-08-15 after this
+# gate was tested against the sentence that was actually living in
+# weekclip-ios (`AppError.insufficientCapacity`'s recovery suggestion):
+#
+#     "Please upgrade your plan or delete some content"
+#
+# The old pattern had `upgrade[ _-]?plan`, which does not match "upgrade YOUR
+# plan", and nothing else in the list matched either — so both gates passed a
+# real Guideline 3.1.1 string. A gate is only worth what you have watched it
+# reject.
+FORBIDDEN='checkout|polar|purchase|subscription|subscribe|top[ _-]?up|billing|payment|credit[ _-]?card|paywall|upgrade.{0,20}plan|\bplans?\b|refund|invoice|price|pricing|\$[0-9]'
 
 fail=0
 
