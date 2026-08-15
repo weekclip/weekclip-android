@@ -47,6 +47,36 @@ plain fact — no price, no top-up path, no "buy on the web".
 `local.properties` (gitignored) needs `sdk.dir=$HOME/Library/Android/sdk`, or set
 `ANDROID_HOME`.
 
+## Running against dev
+
+Everything above builds with no configuration. Reaching the dev tier with a real
+session needs three environment variables, all empty by default so CI and a
+clean checkout are unaffected. Values come from the superrepo's encrypted ledger
+— they are not committed here, and they are not to be pasted into a shell you
+will scroll back through:
+
+```bash
+export WEEKCLIP_SUPABASE_ANON_KEY_DEV="$(../scripts/secrets/vault.sh get dev SUPABASE_ANON_KEY)"
+export WEEKCLIP_DEBUG_SIGN_IN_EMAIL="adam@weekclip.com"
+export WEEKCLIP_DEBUG_SIGN_IN_PASSWORD="$(../scripts/secrets/vault.sh get dev CAPTURE_BOT_PASSWORD)"
+./gradlew installDebug
+```
+
+With those set, a debug build signs in **once** on first launch and restores the
+stored session on every launch after. `adb logcat -s WeekclipDebugAuth` tells you
+which happened — `signed in` vs `restored a stored session … no network needed` —
+and that difference is the point of the feature. Without them the app behaves
+like a release build: no session, `AppError.Unauthorized`, error screen.
+
+> ⚠️ **The dev API is behind a WAF that allows exactly one address** — the
+> WireGuard egress `158.247.237.200` (superrepo `docs/ops/security-topology-161.md`
+> §3). Off the VPN, `*.weekclip.dev` answers **403 with a Cloudflare HTML page**,
+> which the app maps to `AppError.Unauthorized` and renders as "Your session has
+> ended" — a session error for a network problem. If the app signs in fine but
+> every API call fails, check the VPN before you debug the session code.
+> Supabase itself is *not* behind that WAF, which is why sign-in can succeed
+> while everything after it fails.
+
 ## UI verification (Maestro)
 
 Unit tests never construct the Activity, so until now nothing here could tell
@@ -87,7 +117,9 @@ app/src/main/kotlin/cc/sunglint/weekclip/
 ├── MainActivity.kt             # single activity, Compose host
 ├── core/
 │   ├── network/                # base URLs (from BuildConfig), envelope,
-│   │                           # auth interceptor, session-token seam
+│   │                           # auth interceptor + 401 authenticator, session axis
+│   ├── session/                # the session itself: Keystore cipher, encrypted
+│   │                           # store, refresh with single-flight, SessionManager
 │   └── result/                 # AppError + AppResult — the closed failure set
 ├── domain/                     # pure Kotlin: models, repository interfaces, use cases
 ├── data/
@@ -152,6 +184,7 @@ Not built yet, on purpose:
 | Missing | Why it is not here |
 |---|---|
 | Local cache (Room) | PRD-0008 states no offline requirement. A schema with no read path is a migration liability from day one; the repository interface is the seam that makes it addable |
-| Auth / session storage | Task 148.5. `SessionTokenProvider` is the seam — today it returns null and requests come back 401, which the UI already renders |
+| Sign-in (Google OAuth) | Task 148.5c-b, and it is **blocked on console work** — an Android OAuth client keyed to this package name and its SHA-1, plus a redirect URL registered with Supabase. Google is the product's only login (weekclip-web `LoginPage.tsx`). Until then a **debug-only** password sign-in stands in; see "Running against dev" |
+| Guest / share session storage | PRD-0008 D5 needs one, but nothing writes it yet: a share session is minted by entering a link's password on a screen that does not exist (task 148.7). The **axis** is real and tested — `SessionAxis` routes `/api/v1/share/*` away from the profile bearer, so the store plugs in behind `SessionCredentialProvider` without the interceptor, the authenticator or a repository changing |
 | One-off event channel (`SharedFlow`) | There is no event to send yet. An empty channel plus an unread `LaunchedEffect` is worse than nothing |
 | App Links intent filters | Task 148.5, and they need `assetlinks.json` served from `weekclip.com` first. Declaring them before the domain verifies gives users a chooser dialog |

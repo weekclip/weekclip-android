@@ -27,6 +27,31 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  // ---------------------------------------------------------------------------
+  // Build-time values that must not be committed
+  //
+  // The Supabase anon key is *public* by construction — weekclip.com serves it
+  // to every browser — but the repo is not where it lives. `secrets/*.enc.yaml`
+  // in the superrepo is the value ledger, and copying a value out of a ledger
+  // into a tracked file is how ledgers start lying. So these arrive from the
+  // environment, and default to empty so a clean checkout and CI both build:
+  //
+  //   WEEKCLIP_SUPABASE_ANON_KEY_DEV   vault.sh get dev SUPABASE_ANON_KEY
+  //   WEEKCLIP_DEBUG_SIGN_IN_EMAIL     a dev-tier account, e.g. adam@weekclip.com
+  //   WEEKCLIP_DEBUG_SIGN_IN_PASSWORD  vault.sh get dev CAPTURE_BOT_PASSWORD
+  //
+  // What an empty value costs is stated where it is read — `AuthConfig`
+  // for the key, `DebugAutoSignIn` for the credentials.
+  //
+  // Read inline rather than hoisted into a `val`, which is not a style choice:
+  //   · a `val` INSIDE this `android { }` block is a **parse error** on AGP
+  //     9.3.1 / Gradle 9.7 — `Expecting '}'`, pointing at the block's brace
+  //     rather than at the declaration;
+  //   · a `val` at script top level compiles, and then the whole script stops
+  //     configuring the project — AGP reports "does not specify `compileSdk`"
+  //     for a file that plainly does, and Hilt reports its own dependency
+  //     missing. Both measured while writing this.
+  // ---------------------------------------------------------------------------
   buildTypes {
     release {
       isMinifyEnabled = true
@@ -38,6 +63,11 @@ android {
       // app talks to the same two services the browser does.
       buildConfigField("String", "API_BASE_URL", "\"https://service-api.weekclip.com/api/v1\"")
       buildConfigField("String", "USER_API_BASE_URL", "\"https://user-api.weekclip.com/api/v1\"")
+
+      // Production Supabase. The URL is already committed in every service's
+      // wrangler.jsonc — it is an address, not a credential.
+      buildConfigField("String", "SUPABASE_URL", "\"https://pmkuddfuwdbvsjwudgii.supabase.co\"")
+      buildConfigField("String", "SUPABASE_ANON_KEY", "\"${System.getenv("WEEKCLIP_SUPABASE_ANON_KEY_PROD") ?: ""}\"")
     }
     debug {
       isMinifyEnabled = false
@@ -47,6 +77,21 @@ android {
       // secrets tier table). A debug build must never reach production data.
       buildConfigField("String", "API_BASE_URL", "\"https://service-api.weekclip.dev/api/v1\"")
       buildConfigField("String", "USER_API_BASE_URL", "\"https://user-api.weekclip.dev/api/v1\"")
+
+      // The dev Supabase project — a different project with different users, so
+      // a debug build cannot mint a token production would accept even by
+      // accident.
+      buildConfigField("String", "SUPABASE_URL", "\"https://uwygkfgdpglwblkmndtc.supabase.co\"")
+      buildConfigField("String", "SUPABASE_ANON_KEY", "\"${System.getenv("WEEKCLIP_SUPABASE_ANON_KEY_DEV") ?: ""}\"")
+
+      // Debug-only sign-in (PRD-0008 148.5). The product's only login is Google
+      // OAuth, which needs per-platform OAuth clients that do not exist yet
+      // (148.5c-b) — so without this there is no way to put a real token in
+      // front of the session code on a real device, and "the store works" would
+      // rest entirely on unit tests. These two fields exist only in the debug
+      // build type, and the code that reads them only in the debug source set.
+      buildConfigField("String", "DEBUG_SIGN_IN_EMAIL", "\"${System.getenv("WEEKCLIP_DEBUG_SIGN_IN_EMAIL") ?: ""}\"")
+      buildConfigField("String", "DEBUG_SIGN_IN_PASSWORD", "\"${System.getenv("WEEKCLIP_DEBUG_SIGN_IN_PASSWORD") ?: ""}\"")
     }
   }
 
@@ -91,7 +136,6 @@ dependencies {
   implementation(libs.androidx.hilt.navigation.compose)
   implementation(libs.androidx.work.runtime.ktx)
   implementation(libs.androidx.datastore.preferences)
-  implementation(libs.androidx.security.crypto)
 
   implementation(platform(libs.compose.bom))
   implementation(libs.compose.ui)
