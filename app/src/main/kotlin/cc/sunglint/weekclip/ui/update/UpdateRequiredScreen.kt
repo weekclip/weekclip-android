@@ -15,6 +15,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cc.sunglint.weekclip.R
+import cc.sunglint.weekclip.ui.components.WeekclipLogoMark
+import cc.sunglint.weekclip.ui.components.WeekclipLogoSize
 
 /**
  * The terminal screen for a build the server no longer accepts.
@@ -38,6 +40,11 @@ fun UpdateRequiredScreen(
     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
+    // The only full-screen moment the app currently owns, and the one screen a
+    // blocked user is guaranteed to see — so it is where the mark earns its
+    // place. Above the title, not replacing it: `screen-title` is what
+    // maestro/ selects on.
+    WeekclipLogoMark(size = WeekclipLogoSize.ExtraLarge)
     Text(
       text = stringResource(R.string.update_required_title),
       style = MaterialTheme.typography.headlineSmall,

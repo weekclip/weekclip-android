@@ -1,45 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Adaptive-icon foreground: the WeekClip mark.
+  The WeekClip mark for in-app use — see `ui/components/WeekclipLogo.kt`.
 
-  Canonical vector source: weekclip-design-system/packages/assets/logo/logo.svg
-  (viewBox 0 0 687 687, one filled path, fill #5B53FF = color.accent.default).
-  The path data below is that file's `d` attribute, byte for byte — no
-  re-drawing, no simplification, so the launcher and the web header render the
-  same outlines.
+  Same path as `ic_launcher_foreground.xml`, but at the source viewBox with no
+  transform: nothing crops this one, so the adaptive-icon safe-zone inset would
+  only add dead space.
 
-  What this replaces: a blue square with a white play triangle in #3B6FE0, a
-  colour that exists nowhere in the design system. It was honest placeholder
-  art (`Color.kt` said so) that shipped anyway.
+  `fillColor` is the brand accent so the drawable is right on its own (Studio
+  preview, any `Image`). The design system paints the mark by masking rather
+  than embedding a colour: `.wc-logo` sets `background-color` to the accent
+  token and shows it through a mask of this same path. So callers that want
+  another colour use `Icon(..., tint = ...)`, whose ColorFilter replaces this
+  fill. WeekclipLogo does exactly that.
 
-  ## The group transform
-
-  The source path's ink is 539.422 x 610.100, centred at (343.211, 344.141)
-  within its 687 viewBox — not at the viewBox centre, so scaling alone would
-  leave the mark visibly off. The group instead maps ink centre -> (54, 54):
-
-      scale = 62 / 610.100 = 0.1016227     (fit the taller axis to 62dp)
-      tx    = 54 - 343.211 * scale = 19.1221
-      ty    = 54 - 344.141 * scale = 19.0276
-
-  A `<group>` with no pivot applies translate(tx,ty) o scale(s), so a source
-  point p lands at s*p + t. That puts the mark inside x 26.6..81.4 and
-  y 23.0..85.0 — within the 66dp keyline (21..87) that a circular or squircle
-  mask may crop to, on every launcher shape.
+  (Not quoting the CSS custom property verbatim is deliberate — its two leading
+  dashes are illegal inside an XML comment, and aapt2 reports that as a parse
+  error at a column, not as "your comment has a hyphen problem".)
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-  android:width="108dp"
-  android:height="108dp"
-  android:viewportWidth="108"
-  android:viewportHeight="108">
-  <group
-    android:translateX="19.1221"
-    android:translateY="19.0276"
-    android:scaleX="0.1016227"
-    android:scaleY="0.1016227">
-    <path
-      android:fillColor="#FF5B53FF"
-      android:pathData="
+  android:width="28dp"
+  android:height="28dp"
+  android:viewportWidth="687"
+  android:viewportHeight="687">
+  <path
+    android:fillColor="#FF5B53FF"
+    android:pathData="
       M 228.427 40.899 C 225.637 41.904, 212.587 49.010, 199.427 56.690 C 186.267 64.370, 165.150
       76.645, 152.500 83.967 C 139.850 91.289, 122.975 101.090, 115 105.747 C 107.025 110.403, 97.559
       115.928, 93.964 118.024 C 86.202 122.550, 78.698 130.249, 75.679 136.783 L 73.500 141.500 73.500
@@ -64,5 +49,4 @@
       451.590 154.786, 442.687 149.616 C 422.970 138.165, 355.936 99.437, 336 87.977 C 311.426 73.852,
       285.156 58.667, 270.500 50.117 C 262.800 45.624, 254.281 41.285, 251.568 40.474 C 244.880
       38.475, 234.637 38.663, 228.427 40.899" />
-  </group>
 </vector>
