@@ -41,7 +41,8 @@ android {
   //   WEEKCLIP_DEBUG_SIGN_IN_PASSWORD  vault.sh get dev CAPTURE_BOT_PASSWORD
   //
   // What an empty value costs is stated where it is read — `AuthConfig`
-  // for the key, `DebugAutoSignIn` for the credentials.
+  // for the key, `DebugPasswordSignIn` for the credentials — and with no
+  // credentials the login screen simply has no debug button (DebugSessionModule).
   //
   // Read inline rather than hoisted into a `val`, which is not a style choice:
   //   · a `val` INSIDE this `android { }` block is a **parse error** on AGP
@@ -136,6 +137,7 @@ dependencies {
   implementation(libs.androidx.hilt.navigation.compose)
   implementation(libs.androidx.work.runtime.ktx)
   implementation(libs.androidx.datastore.preferences)
+  implementation(libs.androidx.browser)
 
   implementation(platform(libs.compose.bom))
   implementation(libs.compose.ui)

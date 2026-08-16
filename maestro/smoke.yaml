@@ -3,9 +3,10 @@ name: skeleton-smoke
 tags:
   - smoke
 ---
-# The app launches, renders its start destination, and completes one full pass
-# through the spine. A Hilt or Compose wiring mistake fails here and nowhere in
-# the unit tests, which never construct the Activity.
+# The app launches, renders the first gate, and — when this build can sign in —
+# completes one full pass through the spine behind it. A Hilt or Compose wiring
+# mistake fails here and nowhere in the unit tests, which never construct the
+# Activity.
 - launchApp:
     clearState: true
 
@@ -16,23 +17,53 @@ tags:
 - assertVisible:
     id: "screen-title"
 
-# By text, because the start destination is a contract: WeekclipRoutes.DASHBOARD
-# is where deep links land (PRD-0008 D4).
-- assertVisible: "Studios"
+# The gate itself (PRD-0008 D4). `clearState` guarantees no stored session, so
+# the first screen must be this one. Before #148's login task the same launch
+# landed on the dashboard — if this ever passes on `dashboard-list` again, the
+# gate has been bypassed rather than the flow having gone stale.
+- assertVisible:
+    id: "login-google"
 
-# The real claim. `dashboard-loading` is the initial state, so its *disappearance*
-# means DashboardViewModel was constructed by Hilt, GetStudiosUseCase ran, the
-# repository answered, and the new state reached Compose. Whether the answer was
-# a list or an error does not matter here — both clear `isLoading`, and which one
-# you get depends on whether this machine can reach the WAF-gated dev API. This
-# flow asserts the spine, not the network.
-# 45s, not 15s. The wait has to outlast the HTTP client, or a slow network
-# fails this flow before the request itself gives up — and the report would
-# blame the app. NetworkModule budgets 15s connect + 30s read, so 45s is that
-# ceiling plus room to draw.
-- extendedWaitUntil:
-    notVisible:
-      id: "dashboard-loading"
-    timeout: 45000
+# The dashboard must NOT be reachable from here. Stating the negative is the
+# point: "login is visible" would still hold if the app rendered both.
+- assertNotVisible:
+    id: "dashboard-list"
 
-- takeScreenshot: dashboard
+- takeScreenshot: login
+
+# Everything below needs a session, and only a build with credentials in
+# `local.properties` has a way to get one without a Google round trip. The
+# button is absent otherwise (DebugSessionModule contributes an empty set), so
+# this branch skips instead of failing — and, unlike a skip we invented, the
+# condition is the same fact the user sees on screen.
+- runFlow:
+    when:
+      visible:
+        id: "login-debug"
+    commands:
+      - tapOn:
+          id: "login-debug"
+
+      # The real claim. Crossing the gate means SessionManager adopted a live
+      # grant, the auth gate re-resolved, the NavHost was constructed, Hilt
+      # built DashboardViewModel, GetStudiosUseCase ran, and the answer reached
+      # Compose. `dashboard-loading` disappearing is the last of those.
+      #
+      # Whether the answer was a list or an error does not matter here — both
+      # clear `isLoading`, and which one you get depends on whether this machine
+      # can reach the WAF-gated dev API. This flow asserts the spine, not the
+      # network.
+      #
+      # 45s, not 15s. The wait has to outlast the HTTP client, or a slow network
+      # fails this flow before the request itself gives up — and the report
+      # would blame the app. NetworkModule budgets 15s connect + 30s read, so
+      # 45s is that ceiling plus room to draw.
+      - extendedWaitUntil:
+          visible: "Studios"
+          timeout: 45000
+      - extendedWaitUntil:
+          notVisible:
+            id: "dashboard-loading"
+          timeout: 45000
+
+      - takeScreenshot: dashboard

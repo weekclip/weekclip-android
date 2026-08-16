@@ -62,11 +62,17 @@ export WEEKCLIP_DEBUG_SIGN_IN_PASSWORD="$(../scripts/secrets/vault.sh get dev CA
 ./gradlew installDebug
 ```
 
-With those set, a debug build signs in **once** on first launch and restores the
-stored session on every launch after. `adb logcat -s WeekclipDebugAuth` tells you
-which happened — `signed in` vs `restored a stored session … no network needed` —
-and that difference is the point of the feature. Without them the app behaves
-like a release build: no session, `AppError.Unauthorized`, error screen.
+With those set, the login screen grows a second, debug-only button — **Sign in
+with a password (debug)** — beside "Continue with Google". Without them it does
+not appear at all (`DebugSessionModule` contributes an empty set), which is
+deliberate: a button guaranteed to fail is worse than no button.
+
+Tapping it signs in and stores the session; every launch after that restores it
+and never reaches the login screen. `adb logcat -s WeekclipDebugAuth` tells you
+which happened — `signed in as …; session stored` on the first tap, and silence
+afterwards because the gate never showed the screen that holds the button.
+Without the credentials the app behaves like a release build: the gate offers
+only Google, which needs the Supabase redirect entry noted below.
 
 > ⚠️ **The dev API is behind a WAF that allows exactly one address** — the
 > WireGuard egress `158.247.237.200` (superrepo `docs/ops/security-topology-161.md`
@@ -184,7 +190,7 @@ Not built yet, on purpose:
 | Missing | Why it is not here |
 |---|---|
 | Local cache (Room) | PRD-0008 states no offline requirement. A schema with no read path is a migration liability from day one; the repository interface is the seam that makes it addable |
-| Sign-in (Google OAuth) | Task 148.5c-b, and it is **blocked on console work** — an Android OAuth client keyed to this package name and its SHA-1, plus a redirect URL registered with Supabase. Google is the product's only login (weekclip-web `LoginPage.tsx`). Until then a **debug-only** password sign-in stands in; see "Running against dev" |
+| Google sign-in, **proven against Google** | The flow is built and tested — `SupabaseOAuth`, `PkceChallenge`, Custom Tabs, the exchange, the gate. What is missing is one console line: `cc.sunglint.weekclip://auth-callback` in Supabase Auth → **Redirect URLs**, per project. No *Android* OAuth client and no SHA-1 are needed — the app opens Supabase's `/auth/v1/authorize`, and Google only ever sees Supabase's own client id and HTTPS callback (measured 2026-08-16). Until that entry exists the tab completes at Google and then sits on the website instead of returning, because GoTrue validates `redirect_to` at callback time; the debug password button is the way round it |
 | Guest / share session storage | PRD-0008 D5 needs one, but nothing writes it yet: a share session is minted by entering a link's password on a screen that does not exist (task 148.7). The **axis** is real and tested — `SessionAxis` routes `/api/v1/share/*` away from the profile bearer, so the store plugs in behind `SessionCredentialProvider` without the interceptor, the authenticator or a repository changing |
 | One-off event channel (`SharedFlow`) | There is no event to send yet. An empty channel plus an unread `LaunchedEffect` is worse than nothing |
 | App Links intent filters | **Blocked on 148.4b**, not on effort. Android App Links verify against the **signing certificate**, and this repo has no release keystore — so `weekclip.com/.well-known/assetlinks.json` carries an empty fingerprint list and `autoVerify` would produce links that quietly never open the app. The parsing half is built and tested (`WeekclipDeepLink`); the manifest half lands with the key |
