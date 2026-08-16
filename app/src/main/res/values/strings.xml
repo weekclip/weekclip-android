@@ -8,6 +8,14 @@
 <resources>
   <string name="app_name">Weekclip</string>
 
+  <!-- The wordmark, as the design system's logo lockup spells it
+       (`.wc-logo-lockup__name` in packages/web/src/components/logo.css):
+       capital C. `app_name` above is the launcher label and is spelled
+       "Weekclip"; the two disagree and that predates this file. Changing the
+       launcher label is a product decision, so the mismatch is recorded here
+       rather than quietly resolved. -->
+  <string name="brand_name" translatable="false">WeekClip</string>
+
   <string name="dashboard_title">Studios</string>
   <string name="dashboard_empty">No studios yet.</string>
 

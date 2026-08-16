@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive-icon background layer.
+
+  #0C0E16 is `color.bg.panel` in the dark theme (weekclip-design-system
+  tokens.json) — the same value the design system's own icon artwork uses as
+  its plate (`packages/assets/logo/favicon.svg`, the rounded rect behind the
+  mark). So the launcher icon, the browser favicon and the PWA mark now agree.
+
+  It was #101014, which is close enough to look deliberate and is not a token.
+
+  A flat colour rather than a drawable on purpose: the background layer is
+  scaled and parallaxed by the launcher, and anything with detail in it gets
+  cropped differently on every device.
+-->
 <resources>
-  <color name="ic_launcher_background">#101014</color>
+  <color name="ic_launcher_background">#0C0E16</color>
 </resources>

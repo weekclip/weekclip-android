@@ -67,6 +67,13 @@ jobs:
       - name: Payment-string gate (PRD-0008 D3)
         run: ./scripts/check-no-payment-strings.sh
 
+      # Same reasoning as the step above: no toolchain needed, so it runs
+      # before five minutes of Gradle. Checks the wiring (fonts referenced and
+      # licensed, no placeholder palette); the icon *geometry* is asserted by
+      # BrandAssetsTest in the unit-test step.
+      - name: Brand-asset gate
+        run: ./scripts/check-brand-assets.sh
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:

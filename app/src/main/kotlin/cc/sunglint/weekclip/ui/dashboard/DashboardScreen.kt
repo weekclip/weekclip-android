@@ -33,6 +33,7 @@ import cc.sunglint.weekclip.R
 import cc.sunglint.weekclip.core.result.AppError
 import cc.sunglint.weekclip.domain.model.Studio
 import cc.sunglint.weekclip.domain.model.StudioRole
+import cc.sunglint.weekclip.ui.components.WeekclipLogoLockup
 import cc.sunglint.weekclip.ui.theme.WeekclipTheme
 
 /**
@@ -69,6 +70,11 @@ fun DashboardScreen(
   modifier: Modifier = Modifier
 ) {
   Column(modifier = modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+    // The start destination, so this is the app's masthead. It sits above
+    // `screen-title` rather than replacing it: that tag is a maestro selector
+    // and the smoke flow also asserts the literal text "Studios".
+    WeekclipLogoLockup(modifier = Modifier.padding(top = 16.dp))
+
     Text(
       text = stringResource(R.string.dashboard_title),
       style = MaterialTheme.typography.headlineMedium,
