@@ -18,6 +18,18 @@
 
   <string name="action_retry">Try again</string>
 
+  <!-- The first gate (PRD-0008 D4). One way in, deliberately: the wireframe's
+       notes are explicit that a second option makes returning users stop and
+       ask which one they used last time. -->
+  <string name="login_title">Sign in to WeekClip</string>
+  <string name="login_subtitle">Your studios, on this device.</string>
+  <string name="login_google">Continue with Google</string>
+  <string name="login_connecting">Finish signing in in your browser.</string>
+  <string name="login_return_to_link">We\'ll take you back to what you opened.</string>
+  <string name="login_error_denied">Sign-in was not completed.</string>
+  <string name="login_error_failed">Could not sign in. Please try again.</string>
+  <string name="login_error_not_configured">This build cannot sign in.</string>
+
   <!-- PRD-0008 D6①. "Update" here is about the app binary, not about capacity
        or anything you could pay for — D3 still holds in this file. -->
   <string name="update_required_title">Update Weekclip to continue</string>

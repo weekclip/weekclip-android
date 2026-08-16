@@ -8,13 +8,24 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 /**
- * The single Supabase GoTrue call the shipped app makes.
+ * The Supabase GoTrue calls the shipped app makes.
  *
- * Only `grant_type=refresh_token` is here. Sign-in is not: the product's one
- * login is Google OAuth (weekclip-web `LoginPage.tsx`), which needs per-platform
- * OAuth clients that do not exist yet (148.5c-b). The password grant used to
- * exercise this code lives in the **debug source set** and is therefore absent
- * from the release APK rather than merely unreachable in it.
+ * Two grants, and they are the whole of the app's relationship with the
+ * identity provider:
+ *
+ * | grant | when |
+ * |-------|------|
+ * | `pkce` | the user finished Google sign-in and came back with a code |
+ * | `refresh_token` | the stored access token is spent |
+ *
+ * `password` is deliberately absent. The product's one login is Google
+ * (weekclip-web `LoginPage.tsx`); the password grant that exercises the session
+ * code on a device lives in the **debug source set**, so it is missing from the
+ * release APK rather than merely unreachable in it.
+ *
+ * Both grants go through the `@AuthApi` client, which carries the project key
+ * and none of the session interceptors — the mechanism that obtains a
+ * credential must not depend on having one (`NetworkModule`).
  */
 interface SupabaseAuthService {
 
@@ -23,11 +34,31 @@ interface SupabaseAuthService {
     @Query("grant_type") grantType: String,
     @Body body: RefreshTokenRequest
   ): Response<SupabaseTokenResponse>
+
+  /**
+   * Trades the authorization code from the redirect for a real grant.
+   *
+   * The field names are GoTrue's, not the OAuth spec's: it wants `auth_code`
+   * where RFC 6749 says `code`. Read out of `@supabase/auth-js`
+   * (`GoTrueClient.js`, `POST /token?grant_type=pkce`), which is the client
+   * already talking to these same projects from weekclip-web.
+   */
+  @POST("token")
+  suspend fun exchangeAuthCode(
+    @Query("grant_type") grantType: String,
+    @Body body: PkceGrantRequest
+  ): Response<SupabaseTokenResponse>
 }
 
 @Serializable
 data class RefreshTokenRequest(
   @SerialName("refresh_token") val refreshToken: String
+)
+
+@Serializable
+data class PkceGrantRequest(
+  @SerialName("auth_code") val authCode: String,
+  @SerialName("code_verifier") val codeVerifier: String
 )
 
 /**

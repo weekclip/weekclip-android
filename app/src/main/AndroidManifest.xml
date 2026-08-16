@@ -24,18 +24,43 @@
     android:theme="@style/Theme.Weekclip"
     android:usesCleartextTraffic="false">
 
+    <!-- launchMode=singleTask is required by the OAuth round trip, not a
+         preference. The Custom Tab opens inside this task; the redirect must
+         come back to the SAME MainActivity instance (via onNewIntent) or it
+         reaches a fresh ViewModel that never started the sign-in it is being
+         handed the answer to. singleTask also clears the tab off the stack, so
+         `back` from the app does not return to a spent consent page. -->
     <activity
       android:name=".MainActivity"
       android:exported="true"
+      android:launchMode="singleTask"
       android:theme="@style/Theme.Weekclip">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
-      <!-- App Links intent-filters (PRD-0008 D4/N2) are added in Phase 3,
-           together with the assetlinks.json that weekclip.com must serve.
-           Declaring them before the domain verifies would give users a
-           chooser dialog instead of a verified link. -->
+
+      <!-- The OAuth redirect target. Must stay byte-identical to
+           SupabaseOAuth.REDIRECT_URI and to the entry in Supabase Auth's
+           "Redirect URLs" allow list — GoTrue compares the string.
+
+           No android:autoVerify here, and none is possible: verification is for
+           https App Links against a domain, and this is a private-use scheme
+           (RFC 8252 §7.1). Any app may claim it, which is exactly why the
+           exchange is bound by PKCE — see core/auth/PkceChallenge.kt. -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="cc.sunglint.weekclip" android:host="auth-callback" />
+      </intent-filter>
+
+      <!-- App Links intent-filters for https://weekclip.com (PRD-0008 D4/N2)
+           are still held back on 148.4b: they verify against the release
+           signing certificate, and assetlinks.json carries no fingerprint yet.
+           Declaring them now would give users a chooser dialog instead of a
+           verified link. MainActivity.handleIntent already routes them — the
+           parser and the gate are live the day the filter lands. -->
     </activity>
 
   </application>

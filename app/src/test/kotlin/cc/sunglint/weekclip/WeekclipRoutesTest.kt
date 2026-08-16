@@ -31,6 +31,20 @@ class WeekclipRoutesTest {
   }
 
   @Test
+  fun `only share routes are reachable without an account`() {
+    // The gate reads this (`AuthGateViewModel`) and it has to agree with
+    // `SessionAxis`, which is the API's version of the same line. Invite is
+    // deliberately on the far side: accepting one attaches a studio to an
+    // account, so the account has to exist first.
+    assertEquals(true, WeekclipRoutes.isGuestRoute(WeekclipRoutes.share("t")))
+    assertEquals(false, WeekclipRoutes.isGuestRoute(WeekclipRoutes.invite("t")))
+    assertEquals(false, WeekclipRoutes.isGuestRoute(WeekclipRoutes.DASHBOARD))
+    assertEquals(false, WeekclipRoutes.isGuestRoute(WeekclipRoutes.studio("s")))
+    assertEquals(false, WeekclipRoutes.isGuestRoute(WeekclipRoutes.members("s")))
+    assertEquals(false, WeekclipRoutes.isGuestRoute(WeekclipRoutes.media("s", "m")))
+  }
+
+  @Test
   fun `every builder produces a path its pattern matches`() {
     val cases = listOf(
       WeekclipRoutes.STUDIO to WeekclipRoutes.studio("s"),

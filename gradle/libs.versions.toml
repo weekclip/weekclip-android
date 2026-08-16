@@ -23,6 +23,12 @@ navigation-compose = "2.9.8"   # Navigation 2 — ADR-0002 D2
 hilt-navigation-compose = "1.4.0"
 work = "2.11.2"
 datastore = "1.2.1"
+# Custom Tabs, for the Google sign-in round trip (#148 / 148.5c-b). Checked the
+# way security-crypto taught us to: 9 of ~178 public members in
+# CustomTabsIntent.java carry @Deprecated in the 1.10.0 sources, and neither
+# `Builder()` nor `launchUrl` is among them. Ordinary attrition, not a
+# deprecated-on-arrival release.
+browser = "1.10.0"
 # androidx.security:security-crypto is deliberately absent. Its 1.1.0 release —
 # the "latest stable" this catalog originally pinned — deprecates its ENTIRE
 # public API (EncryptedSharedPreferences, MasterKey, MasterKeys, EncryptedFile
@@ -69,6 +75,10 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+# The system browser, in-app. RFC 8252 §8.12 rules out a WebView for OAuth and
+# Google enforces it (`disallowed_useragent`); this is the sanctioned way to
+# stay visually inside the app while the browser owns the page and the cookies.
+androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
 
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 compose-ui = { module = "androidx.compose.ui:ui" }

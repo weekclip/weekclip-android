@@ -1,29 +1,21 @@
 package cc.sunglint.weekclip
 
 import android.app.Application
-import cc.sunglint.weekclip.di.AppInitializer
-import cc.sunglint.weekclip.di.ApplicationScope
 import dagger.hilt.android.HiltAndroidApp
-import kotlinx.coroutines.CoroutineScope
-import javax.inject.Inject
 
+/**
+ * Nothing runs at process start.
+ *
+ * It used to: an `AppInitializer` multibinding existed so the debug source set
+ * could sign in before any screen appeared (148.5c). That was the right shape
+ * while there was no login screen to reach — and the wrong one the moment there
+ * was, because it walked straight past the gate. The debug sign-in is now a
+ * button on that gate (`ui/auth/DebugSignInAction`), and with its only
+ * contributor gone the extension point had none left.
+ *
+ * Work that must outlive a screen belongs in the component that owns it —
+ * `SessionManager` is a `@Singleton` and reads its store on first use. Starting
+ * things here instead trades a lazily-correct order for a hand-maintained one.
+ */
 @HiltAndroidApp
-class WeekclipApplication : Application() {
-
-  /**
-   * Empty in a release build — the set has no contributors outside the debug
-   * source set today. Injecting a set rather than naming initializers here
-   * keeps `main` free of any reference to debug-only code.
-   */
-  @Inject
-  lateinit var initializers: Set<@JvmSuppressWildcards AppInitializer>
-
-  @Inject
-  @ApplicationScope
-  lateinit var applicationScope: CoroutineScope
-
-  override fun onCreate() {
-    super.onCreate()
-    initializers.forEach { it.initialize(applicationScope) }
-  }
-}
+class WeekclipApplication : Application()
