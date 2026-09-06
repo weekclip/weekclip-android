@@ -81,7 +81,7 @@ android {
       // The dev Supabase project — a different project with different users, so
       // a debug build cannot mint a token production would accept even by
       // accident.
-      buildConfigField("String", "SUPABASE_URL", "\"https://cgyrzvgrjxhreinxkjic.supabase.co\"")
+      buildConfigField("String", "SUPABASE_URL", "\"https://lwlsneqpufdpmlcwerxa.supabase.co\"")
       buildConfigField("String", "SUPABASE_ANON_KEY", "\"${System.getenv("WEEKCLIP_SUPABASE_ANON_KEY_DEV") ?: ""}\"")
 
       // Debug-only sign-in (PRD-0008 148.5). The product's only login is Google
