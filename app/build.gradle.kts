@@ -66,7 +66,7 @@ android {
 
       // Production Supabase. The URL is already committed in every service's
       // wrangler.jsonc — it is an address, not a credential.
-      buildConfigField("String", "SUPABASE_URL", "\"https://pmkuddfuwdbvsjwudgii.supabase.co\"")
+      buildConfigField("String", "SUPABASE_URL", "\"https://zzqtyoebdnjerkqdslva.supabase.co\"")
       buildConfigField("String", "SUPABASE_ANON_KEY", "\"${System.getenv("WEEKCLIP_SUPABASE_ANON_KEY_PROD") ?: ""}\"")
     }
     debug {
